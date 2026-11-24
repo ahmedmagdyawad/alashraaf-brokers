@@ -714,6 +714,7 @@ function plansFor(x,u){
   return x.plans.map(pl=>{ const [dp,sp,after,yrs]=pl, T=u.total, d=T*dp/100, e=T*sp/100, rest=T-d-e;
     return {label:`${dp}% مقدم${sp?` + ${sp}% بعد ${after} شهور`:''}`, yrs, dp, sp, after, d, e, rest, m:rest/(yrs*12), q:rest/(yrs*4)}; });
 }
+const mpct = u => u.maint&&u.net ? `${+(u.maint/u.net*100).toFixed(1)}%` : '';
 function current(){ const x=CALC[cProj.value], t=x.types[cType.value], u=t.units[cUnit.value]; return {x,t,u}; }
 /* unit drawing: residential unit plan, or the commercial floor plan for the unit's floor */
 function planOf(x,u){
@@ -735,7 +736,7 @@ function renderOffer(){
           <dt>سعر الوحدة</dt><dd class="num">${fmt(u.net)} ج</dd>
           ${u.parking?`<dt>الجراج</dt><dd class="num">${fmt(u.parking)} ج</dd>`:''}
           ${u.m2?`<dt>سعر المتر</dt><dd class="num">${fmt(u.m2)} ج</dd>`:''}
-          ${u.maint?`<dt>وديعة الصيانة</dt><dd class="num">${fmt(u.maint)} ج</dd>`:''}
+          ${u.maint?`<dt>وديعة الصيانة (${mpct(u)})</dt><dd class="num">${fmt(u.maint)} ج</dd>`:''}
         </dl>
         <div class="total"><span>الإجمالي${u.parking?' شامل الجراج':''}</span><b class="num">${fmt(u.total)} ج</b></div>
         <div class="oacts">
@@ -765,7 +766,7 @@ function offerText(){
   L.push(`سعر الوحدة: ${fmt(u.net)} جنيه`);
   if(u.parking) L.push(`الجراج: ${fmt(u.parking)} جنيه`);
   L.push(`الإجمالي${u.parking?' شامل الجراج':''}: ${fmt(u.total)} جنيه`);
-  if(u.maint) L.push(`وديعة الصيانة: ${fmt(u.maint)} جنيه`);
+  if(u.maint) L.push(`وديعة الصيانة (${mpct(u)} من سعر الوحدة): ${fmt(u.maint)} جنيه`);
   if(info.finishing) L.push(`التشطيب: ${info.finishing}`);
   if(info.delivery) L.push(`الاستلام: ${info.delivery}`);
   if(P.length){ L.push(''); L.push('أنظمة السداد (على الإجمالي):');
@@ -809,7 +810,7 @@ function offerHtml(){
           <dl><dt>سعر الوحدة</dt><dd class="num">${fmt(u.net)} ج</dd>
           ${u.parking?`<dt>الجراج</dt><dd class="num">${fmt(u.parking)} ج</dd>`:''}
           ${u.m2?`<dt>سعر المتر</dt><dd class="num">${fmt(u.m2)} ج</dd>`:''}
-          ${u.maint?`<dt>وديعة الصيانة</dt><dd class="num">${fmt(u.maint)} ج</dd>`:''}</dl>
+          ${u.maint?`<dt>وديعة الصيانة (${mpct(u)})</dt><dd class="num">${fmt(u.maint)} ج</dd>`:''}</dl>
           <div class="tot"><span>الإجمالي${u.parking?' شامل الجراج':''}</span><b class="num">${fmt(u.total)} ج</b></div></div>
       </div>
       <div><h4>${pl&&pl.src.startsWith('cfp')?'رسمة الدور':'رسمة الوحدة'}</h4>
@@ -823,7 +824,7 @@ function offerHtml(){
       ${P.length?`<table><thead><tr><th>النظام</th><th>المدة</th><th>المقدم</th>${P.some(p=>p.sp)?'<th>دفعة تانية</th>':''}<th>القسط الشهري</th><th>القسط الربع سنوي</th></tr></thead><tbody>${
         P.map(p=>`<tr><td>${esc(p.label)}</td><td>${p.yrs} سنين</td><td class="num">${fmt(p.d)}</td>${P.some(q=>q.sp)?`<td class="num">${p.sp?fmt(p.e)+` <small>(بعد ${p.after} شهور)</small>`:'-'}</td>`:''}<td><b class="num">${fmt(p.m)}</b></td><td class="num">${fmt(p.q)}</td></tr>`).join('')
       }</tbody></table><p class="cap">كل المبالغ بالجنيه المصري، والأقساط محسوبة على الإجمالي${u.parking?' شامل الجراج':''} بأقساط متساوية.</p>`:'<p>أنظمة السداد للمشروع ده مع إدارة المبيعات.</p>'}</div>
-      ${u.maint?`<div><h4>وديعة الصيانة</h4><p><span class="num">${fmt(u.maint)}</span> جنيه، وبتتدفع حسب شروط التعاقد.</p></div>`:''}
+      ${u.maint?`<div><h4>وديعة الصيانة</h4><p><span class="num">${fmt(u.maint)}</span> جنيه (${mpct(u)} من سعر الوحدة)، وبتتدفع حسب شروط التعاقد.</p></div>`:''}
       <div><h4>عن المشروع</h4><div class="facts2">${[['المدينة',[info.city,info.district].filter(Boolean).join(' · ')],['الموقع',info.location_description],['مساحة الأرض',info.land_area_feddan?info.land_area_feddan+' فدان':(info.land_area_m2?info.land_area_m2+' م²':'')],['الاستلام',info.delivery],['التشطيب',info.finishing],['الجراج',info.parking_type]].filter(r=>r[1]).map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v).slice(0,90))}</b></div>`).join('')}</div></div>
       <div class="terms">
         <b>شروط العرض</b>
